@@ -217,11 +217,13 @@ if not organs:
     st.error("Keine Organe gefunden. Prüfe CSV-Spalten 'organ' und 'kuerzel'.")
     st.stop()
 
-with st.expander("Verfügbare Auswahl (Organ – Kürzel)", expanded=False):
-    st.dataframe(menu, use_container_width=True, hide_index=True)
 
-selected_organs = st.multiselect("Welche Organe sind gewünscht?", options=organs)
-
+selected_organs = st.pills(
+    "Welche Organe sind gewünscht?",
+    options=organs,
+    selection_mode="multi",
+    width="stretch",
+)
 if not selected_organs:
     st.info("Wähle mindestens ein Organ.")
     st.stop()
