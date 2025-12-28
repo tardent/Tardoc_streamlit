@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 from pathlib import Path
 from typing import Iterable, Optional, Dict, List, Tuple, Set
+import html
 
 import streamlit as st
 
@@ -82,6 +83,33 @@ def iter_items_from_csv(csv_path: Path, *, include_active: bool = False) -> Iter
                 organ=organ,
             )
 
+def copy_button(text: str, label: str = "In Zwischenablage kopieren"):
+    escaped = html.escape(text).replace("\n", "\\n")
+    st.components.v1.html(
+        f"""
+        <button id="copybtn" style="padding:0.5rem 0.75rem; border-radius:0.5rem; border:1px solid #ccc; cursor:pointer;">
+            {label}
+        </button>
+        <span id="copystatus" style="margin-left:0.75rem;"></span>
+        <script>
+        const text = "{escaped}";
+        const btn = document.getElementById("copybtn");
+        const status = document.getElementById("copystatus");
+
+        btn.addEventListener("click", async () => {{
+            try {{
+                await navigator.clipboard.writeText(text.replace(/\\n/g, "\\n"));
+                status.textContent = "Kopiert ✓";
+                setTimeout(() => status.textContent = "", 2000);
+            }} catch (e) {{
+                status.textContent = "Kopieren fehlgeschlagen (Browser blockiert).";
+                setTimeout(() => status.textContent = "", 4000);
+            }}
+        }});
+        </script>
+        """,
+        height=60,
+    )
 
 def load_organs_menu(csv_path: Path) -> List[Tuple[str, str]]:
     """Returns list of (organ, kuerzel) pairs."""
@@ -264,6 +292,7 @@ out = build_summary_text(normal, pathological)
 
 st.subheader("Ergebnis")
 st.code(out, language="text")
+copy_button(out)
 
 colA, colB = st.columns([1, 2])
 with colA:
